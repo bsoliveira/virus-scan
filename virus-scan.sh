@@ -19,7 +19,10 @@ TMPFILE="$(mktemp)"
 trap 'rm -f "$TMPFILE"' EXIT
 
 # Check dependency
-command -v clamscan >/dev/null 2>&1 || exit 2
+if ! command -v clamscan >/dev/null 2>&1; then
+    echo "ERROR: 'clamscan' dependency not found. Install ClamAV." >&2
+    exit 2
+fi
 
 # Target path (file or directory)
 TARGET="${1:-.}"
@@ -51,7 +54,9 @@ if [ "$SCAN_EXIT_CODE" -eq 1 ]; then
   } >> "$LOG_FILE"
 fi
 
-# Pause when running in a terminal (e.g. Thunar)
-[ -t 1 ] && read -rsn1
+if [ -t 1 ]; then
+    echo "Press any key to exit..."
+    read -rsn1
+fi
 
 exit "$SCAN_EXIT_CODE"
